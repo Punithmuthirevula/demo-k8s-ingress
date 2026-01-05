@@ -7,8 +7,8 @@
 
 ```bash
 eksctl utils associate-iam-oidc-provider \
-  --cluster my-cluster \
-  --region us-east-1 \
+  --cluster <cluster-name> \
+  --region <region> \
   --approve
 ```
 ## Step 2: Install AWS Load Balancer Controller
@@ -27,10 +27,10 @@ aws iam create-policy \
 
 ```bash
 eksctl create iamserviceaccount \
-  --cluster my-cluster \
+  --cluster <cluster-name> \
   --namespace kube-system \
   --name aws-load-balancer-controller \
-  --attach-policy-arn arn:aws:iam::040108639617:policy/AWSLoadBalancerControllerIAMPolicy \
+  --attach-policy-arn arn:aws:iam::<aws-account-number>:policy/AWSLoadBalancerControllerIAMPolicy \
   --approve
 ```
 
@@ -42,7 +42,7 @@ helm repo update
 
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n kube-system \
-  --set clusterName=my-cluster \
+  --set clusterName=<cluster-name> \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller
 ```
@@ -83,7 +83,7 @@ kind: Service
 metadata:
   name: nginx-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: nginx
   ports:
@@ -98,11 +98,11 @@ kind: Ingress
 metadata:
   name: nginx-ingress
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/group.name: my-group
 spec:
+  ingressClassName: alb
   rules:
   - http:
       paths:
